@@ -1,0 +1,5 @@
+# ignore folder of Visual Studio Code with compiler settings
+.vscode/
+
+# ignore all executable files
+*.exe
