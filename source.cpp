@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <time.h>
 #include <iostream>
+#include <cmath>
 
 using namespace std;
 
@@ -27,24 +28,31 @@ public:
     this->col = col;
   }
 
-  bool operator==(const position &a)
+  bool operator==(const position& a)
   {
     return this->row == a.row && this->col == a.col;
   }
 };
 
+struct coordinate
+{
+  double p;
+  double y;
+};
+
 config dataConfig;
 
 bool readVariables();
-void calculateSpread(double, double, vector<vector<int>> &, int, int, int &);
+void calculateSpread(double, double, vector<vector<int>>&, int, int, int&);
 double randomProbability();
-int find(int, vector<int> &);
-void unionLables(int, int, vector<int> &);
-void createClusters(vector<vector<int>> &);
+int find(int, vector<int>&);
+void unionLables(int, int, vector<int>&);
+void createClusters(vector<vector<int>>&);
 bool searchConstrictionCluster(vector<vector<int>>);
 void print(vector<vector<int>>);
+void approximate(vector<coordinate>&, double);
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   if (!readVariables())
   {
@@ -53,14 +61,15 @@ int main(int argc, char **argv)
 
   srand((unsigned)time(NULL));
 
-  const double STEP = 0.05;
+  const double STEP = 0.01;
 
   double p = 0;
   int mC = 0;
   size_t mCur = 0;
   vector<vector<int>> grid(dataConfig.n, vector<int>(dataConfig.n, 0));
+  vector <coordinate> factors;
 
-  while (p <= 1.05)
+  while (p <= 1.01)
   {
     do
     {
@@ -72,11 +81,18 @@ int main(int argc, char **argv)
       grid = vector<vector<int>>(dataConfig.n, vector<int>(dataConfig.n, 0));
     } while (mCur < dataConfig.m);
 
-    printf("p = %f\np(c) = %.10f\n", p, double(mC / double(dataConfig.m)));
-
+    factors.push_back(coordinate{ p,double(mC / double(dataConfig.m)) });
     p += STEP;
     mCur = mC = 0;
   }
+
+  calculateSpread(0.5, dataConfig.q, grid, dataConfig.startRow, dataConfig.startCol, mC);
+  approximate(factors, double(mC / double(dataConfig.m)));
+  for (auto&& elem : factors)
+  {
+    printf("p = %f\nP(p) = %f\n", elem.p, elem.y);
+  }
+
 }
 
 bool readVariables()
@@ -90,7 +106,7 @@ bool readVariables()
    * q - вероятность восстановления узла
    */
   errno = 0;
-  char *p;
+  char* p;
   // чтение параметров
   printf("Введите параметры\n");
   printf("Размерность решетки: ");
@@ -108,7 +124,7 @@ bool readVariables()
 
 bool searchConstrictionCluster(vector<vector<int>> grid)
 {
-  for (auto &&i : grid[grid.size() - 1])
+  for (auto&& i : grid[grid.size() - 1])
   {
     if (i == 1)
     {
@@ -120,9 +136,9 @@ bool searchConstrictionCluster(vector<vector<int>> grid)
 
 void print(vector<vector<int>> grid)
 {
-  for (auto &&i : grid)
+  for (auto&& i : grid)
   {
-    for (auto &&j : i)
+    for (auto&& j : i)
     {
       printf(" %2d ", j);
     }
@@ -135,28 +151,28 @@ double randomProbability()
   return (float)rand() / RAND_MAX;
 }
 
-void calculateSpread(double p, double q, vector<vector<int>> &grid, int startRow, int startCol, int &mC)
+void calculateSpread(double p, double q, vector<vector<int>>& grid, int startRow, int startCol, int& mC)
 {
   grid[startRow][startCol] = true;
-  position start = {startRow, startCol};
+  position start = { startRow, startCol };
   vector<position> infected(1, start);
   size_t prevSize = infected.size();
   map<int, int> clusterSizes;
 
   while (prevSize)
   {
-    for (auto &&node : infected)
+    for (auto&& node : infected)
     {
-      vector<position> neighbours = {position{node.row + 1, node.col},
+      vector<position> neighbours = { position{node.row + 1, node.col},
                                      position{node.row, node.col - 1},
                                      position{node.row - 1, node.col},
-                                     position{node.row, node.col + 1}};
-      for (auto &&n : neighbours)
+                                     position{node.row, node.col + 1} };
+      for (auto&& n : neighbours)
       {
         if (n.row >= 0 && n.row < grid.size() && n.col >= 0 && n.col < grid.size() && !grid[n.row][n.col] && randomProbability() <= p)
         {
           grid[n.row][n.col] = 1;
-          infected.push_back(position{n.row, n.col});
+          infected.push_back(position{ n.row, n.col });
         }
       }
     }
@@ -165,9 +181,9 @@ void calculateSpread(double p, double q, vector<vector<int>> &grid, int startRow
     createClusters(copyGrid);
     vector<int> sizes;
 
-    for (auto &&i : copyGrid)
+    for (auto&& i : copyGrid)
     {
-      for (auto &&j : i)
+      for (auto&& j : i)
       {
         if (!j)
         {
@@ -184,7 +200,7 @@ void calculateSpread(double p, double q, vector<vector<int>> &grid, int startRow
       }
     }
 
-    for (auto &&i : sizes)
+    for (auto&& i : sizes)
     {
       if (clusterSizes.find(i) == clusterSizes.end())
       {
@@ -208,7 +224,7 @@ void calculateSpread(double p, double q, vector<vector<int>> &grid, int startRow
     {
       for (size_t j = 0; j < grid[i].size(); j++)
       {
-        position node = {int(i), int(j)};
+        position node = { int(i), int(j) };
         if (grid[i][j] && find(infected.begin(), infected.end(), node) == infected.end() && randomProbability() <= q)
         {
           grid[i][j] = 0;
@@ -220,7 +236,7 @@ void calculateSpread(double p, double q, vector<vector<int>> &grid, int startRow
   }
 }
 
-int find(int x, vector<int> &labels)
+int find(int x, vector<int>& labels)
 {
   int y = x;
   while (labels[y] != y)
@@ -234,15 +250,15 @@ int find(int x, vector<int> &labels)
   return y;
 }
 
-void unionLabels(int x, int y, vector<int> &labels)
+void unionLabels(int x, int y, vector<int>& labels)
 {
   labels[find(x, labels)] = find(y, labels);
 }
 
-void createClusters(vector<vector<int>> &grid)
+void createClusters(vector<vector<int>>& grid)
 {
   grid.insert(grid.begin(), vector<int>(grid.size(), 0));
-  for (auto &&i : grid)
+  for (auto&& i : grid)
   {
     i.insert(i.begin(), 0);
   }
@@ -304,8 +320,15 @@ void createClusters(vector<vector<int>> &grid)
       }
 
   grid.erase(grid.begin());
-  for (auto &&i : grid)
+  for (auto&& i : grid)
   {
     i.erase(i.begin());
+  }
+}
+
+void approximate(vector<coordinate>& v, double pC) {
+  for (auto&& elem : v)
+  {
+    elem.y = 1 - pow(1 + exp((elem.p - pC) / 1), -1);
   }
 }

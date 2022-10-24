@@ -4,3 +4,5 @@
 # ignore all executable files
 *.exe
 *.out
+
+.editorconfig
