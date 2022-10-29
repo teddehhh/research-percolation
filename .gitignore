@@ -1,0 +1,9 @@
+# Visual Studio Code folder with settings
+.vscode/
+
+# executable files
+*.exe
+*.out
+
+# file with result
+output.txt
