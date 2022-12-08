@@ -19,11 +19,13 @@ public:
   int M;           // Количество проводимых экспериментов
   double q1 = 0.5; // Вероятность занятости соседнего узла
   double q2;       // Вероятность освобождения узла
-  config(int N, int M, double q2)
+  bool is_sphere;
+  config(int N, int M, double q2, bool is_sphere)
   {
     this->N = N;
     this->M = M;
     this->q2 = q2;
+    this->is_sphere = is_sphere;
   }
   config() {}
 };
@@ -118,6 +120,7 @@ int main(int argc, char **argv)
 
   srand((unsigned)time(NULL)); // установка генерации случайных чисел, относительно времени
 
+  dataConfig.is_sphere = true;
   vector<vector<int>> grid;     // решетка
   size_t MCurrent = 0;          // текущий номер эксперимента
   int constrictionClusterCount; // счетчик стягивающих кластеров
@@ -199,17 +202,24 @@ bool readVariables()
 
 bool searchConstrictionCluster(vector<vector<int>> grid)
 {
-  /*
-   * Поиск пары с одинаковыми метками в верхней и нижней части решетки
-   */
-  for (size_t i = 0; i < grid[0].size(); i++)
+  if (dataConfig.is_sphere)
   {
-    if (grid[0][i] && find(grid[grid.size() - 1].begin(), grid[grid.size() - 1].end(), grid[0][i]) != grid[grid.size() - 1].end())
-    {
-      return true;
-    }
+    return false;
   }
-  return false;
+  else
+  {
+    /*
+     * Поиск пары с одинаковыми метками в верхней и нижней части решетки
+     */
+    for (size_t i = 0; i < grid[0].size(); i++)
+    {
+      if (grid[0][i] && find(grid[grid.size() - 1].begin(), grid[grid.size() - 1].end(), grid[0][i]) != grid[grid.size() - 1].end())
+      {
+        return true;
+      }
+    }
+    return false;
+  }
 }
 
 double randomProbability()
