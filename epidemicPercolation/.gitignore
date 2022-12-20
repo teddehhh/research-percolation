@@ -1,0 +1,12 @@
+# ignore folder of Visual Studio Code with compiler settings
+.vscode/
+
+# ignore all executable files
+*.exe
+*.out
+
+# editorconfig
+.editorconfig
+
+# output file
+output.txt
