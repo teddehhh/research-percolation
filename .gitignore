@@ -5,4 +5,8 @@
 *.exe
 *.out
 
+# editorconfig
 .editorconfig
+
+# output file
+output.txt
