@@ -1,0 +1,37 @@
+# compiler
+CC=g++
+# flags to compiler
+CFLAGS=-g -c
+
+# path to src of structures
+STRUCTURES_PATH=./structures/src/
+
+# path to src of classes
+CLASSES_PATH=./classes/src/
+
+# path to src of functions
+FUNCTIONS_PATH=./functions/src/
+
+
+all: network_percolation
+
+network_percolation: node.o model.o fhelp.o network.o main.o
+	$(CC) main.o node.o model.o fhelp.o network.o -o main.out
+
+main.o: main.cpp
+	$(CC) $(CFLAGS) main.cpp
+
+node.o: $(STRUCTURES_PATH)node.cpp
+	$(CC) $(CFLAGS) $(STRUCTURES_PATH)node.cpp
+
+model.o: $(STRUCTURES_PATH)model.cpp
+	$(CC) $(CFLAGS) $(STRUCTURES_PATH)model.cpp
+
+fhelp.o: $(FUNCTIONS_PATH)fhelp.cpp
+	$(CC) $(CFLAGS) $(FUNCTIONS_PATH)fhelp.cpp
+
+network.o: $(CLASSES_PATH)network.cpp
+	$(CC) $(CFLAGS) $(CLASSES_PATH)network.cpp
+
+clean:
+	rm -rf *.o
