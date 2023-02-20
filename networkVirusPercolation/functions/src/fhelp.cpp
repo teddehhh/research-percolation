@@ -14,11 +14,9 @@ Model read_model_params()
   cin >> model.q1;
   cout << "Вероятность восстановления узла: ";
   cin >> model.q2;
-  cout << "Вероятность восстановления узла: ";
-  cin >> model.q2;
-  cout << "Ввести периодические граничные условия [да/нет]: ";
+  cout << "Ввести периодические граничные условия [yes/no]: ";
   cin >> s;
-  model.periodic_boundaries = s == "да" ? true : false;
+  model.periodic_boundaries = s == "yes" ? true : false;
 
   return model;
 }

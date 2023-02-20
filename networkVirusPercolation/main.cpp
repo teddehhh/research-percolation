@@ -28,5 +28,7 @@ int main()
   network->do_experiment(output);
 
   output.close();
+
+  cout << "Done!" << endl;
   return 0;
 }

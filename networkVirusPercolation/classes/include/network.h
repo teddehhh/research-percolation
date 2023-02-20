@@ -33,7 +33,7 @@ private:
    * @brief Процедура добавления соседей текущего узла
    *
    * @param node рассматриваемый узел
-   * @param neighbors соседи узла node
+   * @param neighbors соседи для заражения на текущей итерации
    * @param grid решетка
    */
   void add_neighbors(Node node, vector<Node> &neighbors, vector<vector<int>> &grid);
