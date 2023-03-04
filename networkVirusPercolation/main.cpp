@@ -18,7 +18,7 @@ int main()
   Model model = read_model_params();
   if (model.n == 0)
   {
-    cout << "Empty grid in model!" << endl;
+    cout << "Empty grid in the model!" << endl;
     return 1;
   }
 

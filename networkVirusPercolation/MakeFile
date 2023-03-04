@@ -12,6 +12,13 @@ CLASSES_PATH=./classes/src/
 # path to src of functions
 FUNCTIONS_PATH=./functions/src/
 
+ifeq ($(OS), Windows_NT)
+	DELCMD=del
+	DELFLAGS=/f
+else
+	DELCMD=rm
+	DELFLAGS=-f
+endif
 
 all: network_percolation
 
@@ -34,4 +41,4 @@ network.o: $(CLASSES_PATH)network.cpp
 	$(CC) $(CFLAGS) $(CLASSES_PATH)network.cpp
 
 clean:
-	rm -rf *.o
+	$(DELCMD) $(DELFLAGS) *.o
