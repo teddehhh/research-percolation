@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <algorithm>
+#include <math.h>
 #include "../../structures/include/model.h"
 #include "../../structures/include/node.h"
 #include "../../functions/include/fhelp.h"
@@ -70,6 +71,14 @@ private:
    * @return false - стягивающий кластер отсутствует
    */
   bool search_constriction_cluster(vector<vector<int>> grid);
+  /**
+   * @brief Перемаркировка граничных узлов (для переменных граничных условий)
+   *
+   * @param grid решетка
+   * @param min_label метка для перемакировки
+   * @param start_node узел, с которого нужно начать перемакировку
+   */
+  void relable_side_nodes(vector<vector<int>> &grid, int min_label, Node start_node);
 
 public:
   Network(Model);
