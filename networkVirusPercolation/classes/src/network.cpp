@@ -113,8 +113,8 @@ void Network::calculate_spread(double p, vector<vector<int>> &grid)
                 {
                     selectedNeighbor = neighbors[j]; // получение позиции занятого узла
                     avaliableNodes.erase(remove(avaliableNodes.begin(),
-                                avaliableNodes.end(),
-                                selectedNeighbor));          // удаление узла из доступных
+                                                avaliableNodes.end(),
+                                                selectedNeighbor));          // удаление узла из доступных
                     grid[selectedNeighbor.row][selectedNeighbor.col] = true; // занятие узла в решетке
                     infected.push_back(selectedNeighbor);                    // добавление узла в вектор занятых
                     add_neighbors(selectedNeighbor, neighbors, grid);        // получение его соседей
@@ -137,6 +137,27 @@ void Network::calculate_spread(double p, vector<vector<int>> &grid)
     }
 }
 
+bool Network::search_periodic_path(vector<vector<int>> &grid, Node start_node, int level)
+{
+    if (level == model.n - 1)
+    {
+        return true;
+    }
+    if (grid[start_node.row][start_node.col] == grid[start_node.row + 1][start_node.col])
+    {
+        search_periodic_path(grid, Node(start_node.row + 1, start_node.row), level + 1);
+    }
+    if (start_node.col < model.n - 1 && grid[start_node.row][start_node.col] == grid[start_node.row][start_node.col + 1])
+    {
+        search_periodic_path(grid, Node(start_node.row, start_node.col + 1), level);
+    }
+    if (start_node.col > 0 && grid[start_node.row][start_node.col] == grid[start_node.row][start_node.col - 1])
+    {
+        search_periodic_path(grid, Node(start_node.row, start_node.col - 1), level);
+    }
+    return false;
+}
+
 bool Network::search_constriction_cluster(vector<vector<int>> grid)
 {
     /* Поиск пары с одинаковыми метками в верхней и нижней части решетки */
@@ -144,7 +165,14 @@ bool Network::search_constriction_cluster(vector<vector<int>> grid)
     {
         if (grid[0][i] && std::find(grid[model.n - 1].begin(), grid[model.n - 1].end(), grid[0][i]) != grid[model.n - 1].end())
         {
-            return true;
+            if (model.periodic_boundaries)
+            {
+                return search_periodic_path(grid, Node(0, i), 0);
+            }
+            else
+            {
+                return true;
+            }
         }
     }
     return false;
@@ -156,32 +184,32 @@ bool Network::is_node_correct(Node node, vector<vector<int>> &grid)
     int maxWall = grid.size(); // максимальная граница решетки
     /* Узел не должен выходить за границы решетки и должен находиться только в свободном состоянии */
     return node.row != minWall && node.row != maxWall && node.col != minWall && node.col != maxWall &&
-        grid[node.row][node.col] == 0;
+           grid[node.row][node.col] == 0;
 }
 
 void Network::add_neighbors(Node pos, vector<Node> &neighbors, vector<vector<int>> &grid)
 {
     /* Добавление верхнего соседа */
     if (is_node_correct(Node(pos.row - 1, pos.col), grid) &&
-            std::find(neighbors.begin(), neighbors.end(), Node(pos.row - 1, pos.col)) == neighbors.end())
+        std::find(neighbors.begin(), neighbors.end(), Node(pos.row - 1, pos.col)) == neighbors.end())
     {
         neighbors.push_back(Node(pos.row - 1, pos.col));
     }
     /* Добавление нижнего соседа */
     if (is_node_correct(Node(pos.row + 1, pos.col), grid) &&
-            std::find(neighbors.begin(), neighbors.end(), Node(pos.row + 1, pos.col)) == neighbors.end())
+        std::find(neighbors.begin(), neighbors.end(), Node(pos.row + 1, pos.col)) == neighbors.end())
     {
         neighbors.push_back(Node(pos.row + 1, pos.col));
     }
     /* Добавление левого соседа */
     if (is_node_correct(Node(pos.row, pos.col - 1), grid) &&
-            std::find(neighbors.begin(), neighbors.end(), Node(pos.row, pos.col - 1)) == neighbors.end())
+        std::find(neighbors.begin(), neighbors.end(), Node(pos.row, pos.col - 1)) == neighbors.end())
     {
         neighbors.push_back(Node(pos.row, pos.col - 1));
     }
     /* Добавление правого соседа */
     if (is_node_correct(Node(pos.row, pos.col + 1), grid) &&
-            std::find(neighbors.begin(), neighbors.end(), Node(pos.row, pos.col + 1)) == neighbors.end())
+        std::find(neighbors.begin(), neighbors.end(), Node(pos.row, pos.col + 1)) == neighbors.end())
     {
         neighbors.push_back(Node(pos.row, pos.col + 1));
     }

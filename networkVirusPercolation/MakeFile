@@ -15,15 +15,17 @@ FUNCTIONS_PATH=./functions/src/
 ifeq ($(OS), Windows_NT)
 	DELCMD=del
 	DELFLAGS=/f
+	OUT_EXT=.exe
 else
 	DELCMD=rm
 	DELFLAGS=-f
+	OUT_EXT=.out
 endif
 
 all: network_percolation
 
 network_percolation: node.o model.o fhelp.o network.o main.o
-	$(CC) main.o node.o model.o fhelp.o network.o -o main.out
+	$(CC) main.o node.o model.o fhelp.o network.o -o main$(OUT_EXT)
 
 main.o: main.cpp
 	$(CC) $(CFLAGS) main.cpp

@@ -79,6 +79,16 @@ private:
    * @param start_node узел, с которого нужно начать перемакировку
    */
   void relable_side_nodes(vector<vector<int>> &grid, int min_label, Node start_node);
+  /**
+   * @brief Поиск стягивающего кластера при переменных граничных условий
+   *
+   * @param grid решетка
+   * @param start_node начальный узел
+   * @param level уровень
+   * @return true, если путь существует
+   * @return false, если путь отсутствует
+   */
+  bool search_periodic_path(vector<vector<int>> &grid, Node start_node, int level);
 
 public:
   Network(Model);
