@@ -88,7 +88,7 @@ private:
    * @return true, если путь существует
    * @return false, если путь отсутствует
    */
-  bool search_periodic_path(vector<vector<int>> &grid, Node start_node, int level);
+  bool search_periodic_path(vector<vector<int>> &grid, Node start_node, vector<Node> visited);
 
 public:
   Network(Model);
