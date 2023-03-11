@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <map>
 #include <fstream>
 #include <iostream>
 #include <algorithm>
@@ -88,7 +89,7 @@ private:
    * @return true, если путь существует
    * @return false, если путь отсутствует
    */
-  bool search_periodic_path(vector<vector<int>> &grid, Node start_node, vector<Node> visited);
+  bool search_periodic_path(vector<vector<int>> &grid, Node start_node, vector<Node> &visited, vector<int> lines_visited);
 
 public:
   Network(Model);

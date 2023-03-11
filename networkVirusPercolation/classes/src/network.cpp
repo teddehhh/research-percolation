@@ -17,6 +17,7 @@ void Network::do_experiment(ofstream &stream)
     vector<vector<int>> grid;        // решетка
     size_t current_experiment = 0;   // текущий номер эксперимента
     int constriction_clusters_count; // счетчик стягивающих кластеров
+    vector<double> errs;
 
     /**
      * Вычисление вероятности возникновения стягивающего кластера в решетке
@@ -24,12 +25,14 @@ void Network::do_experiment(ofstream &stream)
      */
     for (double p = 0; p < 1.001; p += 0.01)
     {
-        std::cout << "log: p = " << p << std::endl;
+        // cout << "log: p = " << p << endl;
         /* Обнуление счетчика счягивающих кластеров */
         constriction_clusters_count = 0;
+        vector<int> exps(model.m, 0);
         /* Проведение экспериментов с заданной концентрацией узлов */
         for (size_t i = 0; i < this->model.m; i++)
         {
+            // cout << "log: exp = " << i + 1 << endl;
             /* Очистка решетки перед новым экспериментом */
             grid.clear();
             grid = vector<vector<int>>(this->model.n, vector<int>(this->model.n, 0));
@@ -41,10 +44,27 @@ void Network::do_experiment(ofstream &stream)
             if (search_constriction_cluster(grid))
             {
                 constriction_clusters_count++;
+                exps[i] = 1;
             }
         }
+        double probability = constriction_clusters_count / double(this->model.m);
+        // Считаем ошибку в точке
+        double sum = 0;
+        for (size_t i = 0; i < model.m; i++)
+        {
+            sum += pow(exps[i] - probability, 2);
+        }
+
+        double err = sqrt(sum / (model.n - 1)) / sqrt(model.m);
+
+        errs.push_back(err);
         /* Запись в файл вероятности возникновения стягивающего кластера */
-        stream << constriction_clusters_count / double(this->model.m) << endl;
+        stream << probability << endl;
+    }
+    stream << endl;
+    for (auto &&i : errs)
+    {
+        stream << i << endl;
     }
 }
 
@@ -137,81 +157,94 @@ void Network::calculate_spread(double p, vector<vector<int>> &grid)
     }
 }
 
-bool Network::search_periodic_path(vector<vector<int>> &grid, Node start_node, vector<Node> visited)
+bool Network::search_periodic_path(vector<vector<int>> &grid, Node start_node, vector<Node> &visited, vector<int> lines_visited)
 {
-    if (start_node.row == model.n - 1)
+    visited.push_back(start_node);
+    if (std::find(lines_visited.begin(), lines_visited.end(), start_node.row) == lines_visited.end())
     {
-        // cout << "______________" << endl;
-        // cout << "True" << endl;
-        // cout << "______________" << endl;
+        lines_visited.push_back(start_node.row);
+    }
+
+    if (lines_visited.size() == model.n - 1)
+    {
         return true;
     }
-    Node bottom = Node(start_node.row + 1, start_node.col);
-    if (grid[start_node.row][start_node.col] == grid[start_node.row + 1][start_node.col] && std::find(visited.begin(), visited.end(), bottom) == visited.end())
+
+    Node top = Node(start_node.row - 1, start_node.col);
+    if (start_node.row > 0 && grid[start_node.row][start_node.col] == grid[top.row][top.col] && std::find(visited.begin(), visited.end(), top) == visited.end())
     {
-        // cout << "down: " << start_node.row << ":" << start_node.col << "->" << start_node.row + 1 << ":" << start_node.col << endl;
-        visited.push_back(bottom);
-        if (search_periodic_path(grid, bottom, visited))
+        visited.push_back(top);
+        if (search_periodic_path(grid, top, visited, lines_visited))
         {
             return true;
         }
     }
-    Node right = Node(start_node.row, start_node.col + 1);
-    if ((start_node.col < (model.n - 1)) && grid[start_node.row][start_node.col] == grid[start_node.row][start_node.col + 1] && std::find(visited.begin(), visited.end(), right) == visited.end())
+    top = Node(model.n - 1, start_node.col);
+    if (start_node.row == 0 && grid[start_node.row][start_node.col] == grid[top.row][top.col] && std::find(visited.begin(), visited.end(), top) == visited.end())
     {
-        // cout << "right: " << start_node.row << ":" << start_node.col << "->" << start_node.row << ":" << start_node.col + 1 << endl;
-        visited.push_back(right);
-        if (search_periodic_path(grid, right, visited))
-        {
-            return true;
-        }
-    }
-    right = Node(start_node.row, 0);
-    if ((start_node.col == model.n - 1) && grid[start_node.row][start_node.col] == grid[start_node.row][0] && std::find(visited.begin(), visited.end(), right) == visited.end())
-    {
-        // cout << "right: " << start_node.row << ":" << start_node.col << "->" << start_node.row << ":" << start_node.col + 1 << endl;
-        visited.push_back(right);
-        if (search_periodic_path(grid, right, visited))
-        {
-            return true;
-        }
-    }
-    Node left = Node(start_node.row, start_node.col - 1);
-    if ((start_node.col > 0) && grid[start_node.row][start_node.col] == grid[start_node.row][start_node.col - 1] && std::find(visited.begin(), visited.end(), left) == visited.end())
-    {
-        // cout << "left: " << start_node.row << ":" << start_node.col << "->" << start_node.row << ":" << start_node.col - 1 << endl;
-        visited.push_back(left);
-        if (search_periodic_path(grid, left, visited))
-        {
-            return true;
-        }
-    }
-    left = Node(start_node.row, model.n - 1);
-    if ((start_node.col == 0) && grid[start_node.row][start_node.col] == grid[start_node.row][model.n - 1] && std::find(visited.begin(), visited.end(), left) == visited.end())
-    {
-        // cout << "left: " << start_node.row << ":" << start_node.col << "->" << start_node.row << ":" << start_node.col - 1 << endl;
-        visited.push_back(left);
-        if (search_periodic_path(grid, left, visited))
+        visited.push_back(top);
+        if (search_periodic_path(grid, top, visited, lines_visited))
         {
             return true;
         }
     }
 
-    // if (start_node.row == 0)
-    // {
-    //     cout << "______________" << endl;
-    //     cout << "False" << endl;
-    //     cout << "______________" << endl;
-    //     for (int i = 0; i < model.n; i++)
-    //     {
-    //         for (int j = 0; j < model.n; j++)
-    //         {
-    //             cout << grid[i][j];
-    //         }
-    //         cout << endl;
-    //     }
-    //     cout << "______________" << endl;
-    // }
+    Node bottom = Node(start_node.row + 1, start_node.col);
+    if (start_node.row < model.n - 1 && grid[start_node.row][start_node.col] == grid[bottom.row][bottom.col] && std::find(visited.begin(), visited.end(), bottom) == visited.end())
+    {
+        visited.push_back(bottom);
+        if (search_periodic_path(grid, bottom, visited, lines_visited))
+        {
+            return true;
+        }
+    }
+    bottom = Node(0, start_node.col);
+    if (start_node.row == model.n - 1 && grid[start_node.row][start_node.col] == grid[bottom.row][bottom.col] && std::find(visited.begin(), visited.end(), bottom) == visited.end())
+    {
+        visited.push_back(bottom);
+        if (search_periodic_path(grid, bottom, visited, lines_visited))
+        {
+            return true;
+        }
+    }
+
+    Node right = Node(start_node.row, start_node.col + 1);
+    if (start_node.col < model.n - 1 && grid[start_node.row][start_node.col] == grid[right.row][right.col] && std::find(visited.begin(), visited.end(), right) == visited.end())
+    {
+        visited.push_back(right);
+        if (search_periodic_path(grid, right, visited, lines_visited))
+        {
+            return true;
+        }
+    }
+    right = Node(start_node.row, 0);
+    if (start_node.col == model.n - 1 && grid[start_node.row][start_node.col] == grid[right.row][right.col] && std::find(visited.begin(), visited.end(), right) == visited.end())
+    {
+        visited.push_back(right);
+        if (search_periodic_path(grid, right, visited, lines_visited))
+        {
+            return true;
+        }
+    }
+
+    Node left = Node(start_node.row, start_node.col - 1);
+    if (start_node.col > 0 && grid[start_node.row][start_node.col] == grid[left.row][left.col] && std::find(visited.begin(), visited.end(), left) == visited.end())
+    {
+        visited.push_back(left);
+        if (search_periodic_path(grid, left, visited, lines_visited))
+        {
+            return true;
+        }
+    }
+    left = Node(start_node.row, model.n - 1);
+    if ((start_node.col == 0) && grid[start_node.row][start_node.col] == grid[left.row][left.col] && std::find(visited.begin(), visited.end(), left) == visited.end())
+    {
+        visited.push_back(left);
+        if (search_periodic_path(grid, left, visited, lines_visited))
+        {
+            return true;
+        }
+    }
 
     return false;
 }
@@ -226,8 +259,8 @@ bool Network::search_constriction_cluster(vector<vector<int>> grid)
             if (model.periodic_boundaries)
             {
                 vector<Node> visited;
-                visited.push_back(Node(0, i));
-                return search_periodic_path(grid, Node(0, i), visited);
+                vector<int> lines_visited;
+                return search_periodic_path(grid, Node(0, i), visited, lines_visited);
             }
             else
             {
