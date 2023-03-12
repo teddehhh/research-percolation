@@ -25,7 +25,7 @@ int main()
   std::ofstream output("output.txt");
 
   Network *network = new Network(model);
-  network->do_experiment(output);
+  network->modeling(output);
 
   output.close();
 

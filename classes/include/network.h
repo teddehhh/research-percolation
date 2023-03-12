@@ -81,7 +81,7 @@ private:
    */
   void relable_side_nodes(vector<vector<int>> &grid, int min_label, Node start_node);
   /**
-   * @brief Поиск стягивающего кластера при переменных граничных условий
+   * @brief Поиск стягивающего кластера при переменных граничных условий (поиск в ширину)
    *
    * @param grid решетка
    * @param start_node начальный узел
@@ -96,9 +96,9 @@ public:
   ~Network();
 
   /**
-   * @brief
+   * @brief Проведение моделирования
    *
-   * @param stream
+   * @param stream файл для вывода результата
    */
-  void do_experiment(std::ofstream &stream);
+  void modeling(std::ofstream &stream);
 };

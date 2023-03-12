@@ -9,30 +9,29 @@ Network::~Network()
 {
 }
 
-void Network::do_experiment(ofstream &stream)
+void Network::modeling(ofstream &stream)
 {
     /* Установка генерации случайных чисел, относительно времени */
     srand((unsigned)time(NULL));
 
     vector<vector<int>> grid;        // решетка
     size_t current_experiment = 0;   // текущий номер эксперимента
-    int constriction_clusters_count; // счетчик стягивающих кластеров
+    int constriction_clusters_count; // счетчик стягивающих кластеров (СК)
     vector<double> errs;
 
     /**
-     * Вычисление вероятности возникновения стягивающего кластера в решетке
+     * Вычисление вероятности возникновения СК в решетке
      * для разных значений концентрации
      */
     for (double p = 0; p < 1.001; p += 0.01)
     {
-        // cout << "log: p = " << p << endl;
-        /* Обнуление счетчика счягивающих кластеров */
+        /* Обнуление счетчика СК */
         constriction_clusters_count = 0;
+        /* Вектор экспериментов (1 - СК есть, иначе 0) */
         vector<int> exps(model.m, 0);
         /* Проведение экспериментов с заданной концентрацией узлов */
         for (size_t i = 0; i < this->model.m; i++)
         {
-            // cout << "log: exp = " << i + 1 << endl;
             /* Очистка решетки перед новым экспериментом */
             grid.clear();
             grid = vector<vector<int>>(this->model.n, vector<int>(this->model.n, 0));
@@ -40,7 +39,7 @@ void Network::do_experiment(ofstream &stream)
             calculate_spread(p, grid);
             /* Маркирование кластеров на решетке */
             create_clusters(grid);
-            /* Поиск стягивающего кластера и увеличение счетчика найденных */
+            /* Поиск СК и увеличение счетчика найденных */
             if (search_constriction_cluster(grid))
             {
                 constriction_clusters_count++;
@@ -58,7 +57,7 @@ void Network::do_experiment(ofstream &stream)
         double err = sqrt(sum / (model.n - 1)) / sqrt(model.m);
 
         errs.push_back(err);
-        /* Запись в файл вероятности возникновения стягивающего кластера */
+        /* Запись в файл вероятности возникновения СК */
         stream << probability << endl;
     }
     stream << endl;
@@ -173,7 +172,6 @@ bool Network::search_periodic_path(vector<vector<int>> &grid, Node start_node, v
     Node top = Node(start_node.row - 1, start_node.col);
     if (start_node.row > 0 && grid[start_node.row][start_node.col] == grid[top.row][top.col] && std::find(visited.begin(), visited.end(), top) == visited.end())
     {
-        visited.push_back(top);
         if (search_periodic_path(grid, top, visited, lines_visited))
         {
             return true;
@@ -182,7 +180,6 @@ bool Network::search_periodic_path(vector<vector<int>> &grid, Node start_node, v
     top = Node(model.n - 1, start_node.col);
     if (start_node.row == 0 && grid[start_node.row][start_node.col] == grid[top.row][top.col] && std::find(visited.begin(), visited.end(), top) == visited.end())
     {
-        visited.push_back(top);
         if (search_periodic_path(grid, top, visited, lines_visited))
         {
             return true;
@@ -192,7 +189,6 @@ bool Network::search_periodic_path(vector<vector<int>> &grid, Node start_node, v
     Node bottom = Node(start_node.row + 1, start_node.col);
     if (start_node.row < model.n - 1 && grid[start_node.row][start_node.col] == grid[bottom.row][bottom.col] && std::find(visited.begin(), visited.end(), bottom) == visited.end())
     {
-        visited.push_back(bottom);
         if (search_periodic_path(grid, bottom, visited, lines_visited))
         {
             return true;
@@ -201,7 +197,6 @@ bool Network::search_periodic_path(vector<vector<int>> &grid, Node start_node, v
     bottom = Node(0, start_node.col);
     if (start_node.row == model.n - 1 && grid[start_node.row][start_node.col] == grid[bottom.row][bottom.col] && std::find(visited.begin(), visited.end(), bottom) == visited.end())
     {
-        visited.push_back(bottom);
         if (search_periodic_path(grid, bottom, visited, lines_visited))
         {
             return true;
@@ -211,7 +206,6 @@ bool Network::search_periodic_path(vector<vector<int>> &grid, Node start_node, v
     Node right = Node(start_node.row, start_node.col + 1);
     if (start_node.col < model.n - 1 && grid[start_node.row][start_node.col] == grid[right.row][right.col] && std::find(visited.begin(), visited.end(), right) == visited.end())
     {
-        visited.push_back(right);
         if (search_periodic_path(grid, right, visited, lines_visited))
         {
             return true;
@@ -220,7 +214,6 @@ bool Network::search_periodic_path(vector<vector<int>> &grid, Node start_node, v
     right = Node(start_node.row, 0);
     if (start_node.col == model.n - 1 && grid[start_node.row][start_node.col] == grid[right.row][right.col] && std::find(visited.begin(), visited.end(), right) == visited.end())
     {
-        visited.push_back(right);
         if (search_periodic_path(grid, right, visited, lines_visited))
         {
             return true;
@@ -230,7 +223,6 @@ bool Network::search_periodic_path(vector<vector<int>> &grid, Node start_node, v
     Node left = Node(start_node.row, start_node.col - 1);
     if (start_node.col > 0 && grid[start_node.row][start_node.col] == grid[left.row][left.col] && std::find(visited.begin(), visited.end(), left) == visited.end())
     {
-        visited.push_back(left);
         if (search_periodic_path(grid, left, visited, lines_visited))
         {
             return true;
@@ -239,7 +231,6 @@ bool Network::search_periodic_path(vector<vector<int>> &grid, Node start_node, v
     left = Node(start_node.row, model.n - 1);
     if ((start_node.col == 0) && grid[start_node.row][start_node.col] == grid[left.row][left.col] && std::find(visited.begin(), visited.end(), left) == visited.end())
     {
-        visited.push_back(left);
         if (search_periodic_path(grid, left, visited, lines_visited))
         {
             return true;

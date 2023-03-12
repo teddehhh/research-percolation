@@ -5,16 +5,16 @@ Model read_model_params()
   Model model;
   std::string s;
   /* Чтение параметров */
-  cout << "Введите параметры" << endl;
-  cout << "Размерность решетки: ";
+  cout << "Enter parameters" << endl;
+  cout << "Grid size (N): ";
   cin >> model.n;
-  cout << "Количество экспериментов: ";
+  cout << "Number of experiments (M): ";
   cin >> model.m;
-  cout << "Вероятность заражения узла: ";
+  cout << "Chance of infection (q1): ";
   cin >> model.q1;
-  cout << "Вероятность восстановления узла: ";
+  cout << "Chance for recovery (q2): ";
   cin >> model.q2;
-  cout << "Ввести периодические граничные условия [yes/no]: ";
+  cout << "Enable periodic boundaries? [yes/no]: ";
   cin >> s;
   model.periodic_boundaries = s == "yes" ? true : false;
 
