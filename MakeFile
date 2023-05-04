@@ -22,7 +22,7 @@ else
 	OUT_EXT=.out
 endif
 
-all: network_percolation
+all: network_percolation clean
 
 network_percolation: node.o model.o fhelp.o network.o main.o
 	$(CC) main.o node.o model.o fhelp.o network.o -o main$(OUT_EXT)

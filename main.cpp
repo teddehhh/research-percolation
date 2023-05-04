@@ -1,3 +1,7 @@
+#include <string>
+#include <iostream>
+#include <random>
+#include <time.h>
 #include "./structures/include/node.h"
 #include "./structures/include/model.h"
 #include "./functions/include/fhelp.h"
